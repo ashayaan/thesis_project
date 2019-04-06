@@ -1,0 +1,3 @@
+thesis/*
+*.pyc
+source/saved_models/*

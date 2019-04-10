@@ -22,7 +22,8 @@ def combineFiles(data_frames):
 		column_name = name.split('.')[0]
 		l.append(column_name)
 		data_frames[name].rename(columns={'Date':column_name}, inplace = True)
-		combined = pd.concat([combined,data_frames[name].drop(columns=['Vol.','Change %'])],axis=1,sort=False)
+		data_frames[name].rename(columns={'Price':column_name + ' Price'}, inplace = True)
+		combined = pd.concat([combined,data_frames[name].drop(columns=['Open', 'High', 'Low', 'Vol.', 'Change %'])],axis=1,sort=False)
 
 
 	l.remove('SBI_Historical_Data')

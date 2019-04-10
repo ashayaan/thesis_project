@@ -6,8 +6,7 @@ import pandas as pd
 
 class Network(nn.Module):
 	def __init__(self):
-		
-
+		self.fc1 = nn.Linear()
 
 
 

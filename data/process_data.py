@@ -15,23 +15,22 @@ def readFiles(files):
 			data_frames[name] = df
 	return data_frames
 
-def calculateReturns(data_frames):
-	for name in data_frames.keys():
-		data_frames[name]['Return'] =  np.log(data_frames[name]['Price']) - np.log(data_frames[name]['Open'])
-	return data_frames
-
-
-def mergeReturns(data_frames,files):
-	data = {}
+def combineFiles(data_frames):
+	combined = pd.DataFrame()
+	l = []
 	for name in data_frames.keys():
 		column_name = name.split('.')[0]
-		column_name = column_name.split('_')[0]
-	 	data[column_name] = list(data_frames[name]['Return'])
+		l.append(column_name)
+		data_frames[name].rename(columns={'Date':column_name}, inplace = True)
+		combined = pd.concat([combined,data_frames[name].drop(columns=['Vol.','Change %'])],axis=1,sort=False)
 
 
-	df = pd.DataFrame.from_dict(data)
-	df['Date'] = data_frames['BHEL_Historical_Data.csv']['Date']
-	df.to_csv('combined.csv',index=False)	
+	l.remove('SBI_Historical_Data')
+	combined.drop(columns=l,inplace=True)
+	combined.rename(columns={'SBI_Historical_Data':'Date'},inplace = True)
+
+
+	combined.to_csv('combined.csv',index = False)
 
 if __name__ == '__main__':
 	path = 'daily_data'
@@ -39,6 +38,4 @@ if __name__ == '__main__':
 
 	data_frames = readFiles(files)	
 
-	data_frames = calculateReturns(data_frames)
-
-	mergeReturns(data_frames,files)
+	combineFiles(data_frames)

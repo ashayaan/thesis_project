@@ -1,4 +1,4 @@
-batch_size = 1
+batch_size = 200
 input_size = 14
-learning_rate = 0.0001
-num_epochs = 50
+learning_rate = 1e-8
+num_epochs = 100

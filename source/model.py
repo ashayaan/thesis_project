@@ -14,7 +14,7 @@ class Network(nn.Module):
 		self.relu = nn.ReLU()
 		self.fc1 = nn.Linear(input_size, 20)
 		self.fc2 = nn.Linear(20, 25)
-		self.fc3 = nn.Linear(25, 30)
+		self.fc3 = nn.Linear(25, 28)
 		# self.fc4 = nn.Linear(120,135)
 
 	def forward(self,data):
@@ -27,7 +27,7 @@ class Network(nn.Module):
 
 '''Testing network'''
 if __name__ == '__main__':
-	x = torch.randn((1,15))
+	x = torch.randn((1,14))
 	net = Network(input_size)
 
 	print net.forward(x).shape

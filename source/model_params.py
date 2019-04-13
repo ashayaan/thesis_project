@@ -1,4 +1,6 @@
-batch_size = 100
-input_size = 14
-learning_rate = 0.00001
-num_epochs = 100
+#general prameters
+train_size = 0.8
+
+#Predictor Parameter
+input_size = 16
+sequence_size = 10

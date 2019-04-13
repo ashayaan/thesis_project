@@ -1,3 +1,4 @@
 thesis/*
+saved_models/*
 *.pyc
 source/saved_models/*

@@ -30,10 +30,10 @@ class Train(nn.Module):
 	def loss(self,data,out):
 		mean = out[:,:14]
 		std = out[:,14:]
-		loss =  ((data-mean)**2 / 2*(std**2) + std**2)
+		loss =  ((data-mean)**2 / 2*(std**2))
 		loss = loss/self.input_size
 		loss = torch.sum(loss)
-		return loss
+		return loss/self.batch_size
 
 '''
 Reads and normalizes the data
@@ -42,8 +42,8 @@ Normalization scheme min max
 def readData(file):
 	df = pd.read_csv(file)
 	df.drop(columns = ['Date'], inplace = True)
-	df = df.apply(lambda x: (x-np.min(x))/(np.max(x) - np.min(x)))
-	df.to_csv('../data/normalized_combined_data.csv',index = False)
+	# df = df.apply(lambda x: (x-np.min(x))/(np.max(x) - np.min(x)))
+	# df.to_csv('../data/normalized_combined_data.csv',index = False)
 	df = df.values.astype(dtype=np.float32())
 	return df
 
@@ -86,3 +86,4 @@ if __name__ == '__main__':
 	for epoch in range(num_epochs):
 		net,num_iteration = trainNetwork(epoch+1, data,net,num_iteration)
 	
+	torch.save(net.network,'../saved_models/model.pt')

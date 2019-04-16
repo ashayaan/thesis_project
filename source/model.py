@@ -17,21 +17,26 @@ class Network(nn.Module):
 		self.relu = nn.ReLU()
 		self.tanh = nn.Tanh()
 
-		self.layer1 = nn.Linear(input_size,100) 
-		self.layer2 = nn.Linear(100,80)
-		self.layer3 = nn.Linear(80,60)
-		self.layer4 = nn.Linear(60,40)
-		self.layer5 = nn.Linear(40,16)
+		self.layer1 = nn.Linear(input_size,150) 
+		self.layer2 = nn.Linear(150,125)
+		self.layer3 = nn.Linear(125,100)
+		self.layer4 = nn.Linear(100,80)
+		self.layer5 = nn.Linear(80,60)
+		self.layer6 = nn.Linear(60,40)
+		self.layer7 = nn.Linear(40,14)
 
 	def forward(self, data):
 		out = self.relu(self.layer1(data))
 		out = self.relu(self.layer2(out))
 		out = self.relu(self.layer3(out))
 		out = self.relu(self.layer4(out))
-		out = self.layer5(out)
+		out = self.relu(self.layer5(out))
+		out = self.relu(self.layer6(out))
+		out = self.layer7(out)
 		return out
 
 '''Testing the network'''
 if __name__ == '__main__':
-	x = torch.randn((1,5,16))
+	x = torch.randn((4,5,16))
 	test = Network(input_size)
+	print test.forward(x).shape

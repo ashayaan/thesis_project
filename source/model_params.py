@@ -2,5 +2,8 @@
 train_size = 0.8
 
 #Predictor Parameter
-input_size = 16
-sequence_size = 10
+num_epochs = 100 
+batch_size = 99
+sequence_size = 5
+input_size = sequence_size*14
+learning_rate = 1e-5

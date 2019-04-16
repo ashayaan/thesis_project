@@ -5,7 +5,6 @@ import numpy as np
 
 
 from visdom import Visdom
-from model_params import train_size
 from model_params import sequence_size
 
 class Plotter(object):
@@ -29,7 +28,7 @@ class Plotter(object):
 
 class DataProcessing(object):
 	'''Helper class to generate train and test files'''
-	def __init__(self,file_name):
+	def __init__(self,file_name,train_size):
 		self.df = pd.read_csv(file_name)
 		self.df = self.df.drop(columns=['Date'])
 		self.train_size = train_size
@@ -40,10 +39,23 @@ class DataProcessing(object):
 		self.test_data = self.df[self.index:]
 
 	def trainingData(self):
-		return self.train_data
+		attributes = []
+		target = []
+		for i in range( (len(self.train_data)//self.seq_size)*self.seq_size - self.seq_size - 1 ):
+			x = np.array(self.train_data.iloc[i:i+self.seq_size],np.float64)
+			y = np.array(self.train_data.iloc[i+ self.seq_size],np.float64)
+			attributes.append(x)
+			target.append(y)
+
+		attributes = np.array(attributes)
+		target = np.array(target)
+
+		return attributes,target
 
 	def testingData(self):
 		return self.test_data
 
 if __name__ == '__main__':
-	test = DataProcessing('../data/combined.csv')
+	test = DataProcessing('../data/combined.csv',0.8)
+	x,y = test.trainingData()
+	print x.shape

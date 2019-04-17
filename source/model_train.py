@@ -59,6 +59,7 @@ def trainNetwork(net,data,target,num_iterations,epoch):
 
 		print('Epoch: {} Iteration:{} LOSS: {}'.format(epoch, num_iterations, loss.item()))
 		plotter.plot('Loss', 'Train', 'Training Loss', num_iterations, loss.detach().numpy())
+	
 	return net,num_iterations
 	
 
@@ -81,3 +82,5 @@ if __name__ == '__main__':
 
 	for epoch in range(num_epochs):
 		net,num_iterations = trainNetwork(net,train_data,train_target,num_iterations,epoch)
+
+	torch.save(net.network,'../saved_models/model.pt')

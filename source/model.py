@@ -17,9 +17,9 @@ class Network(nn.Module):
 		self.relu = nn.ReLU()
 		self.tanh = nn.Tanh()
 
-		self.layer1 = nn.Linear(input_size,150) 
-		self.layer2 = nn.Linear(150,125)
-		self.layer3 = nn.Linear(125,100)
+		self.layer1 = nn.Linear(input_size,180) 
+		self.layer2 = nn.Linear(180,150)
+		self.layer3 = nn.Linear(150,100)
 		self.layer4 = nn.Linear(100,80)
 		self.layer5 = nn.Linear(80,60)
 		self.layer6 = nn.Linear(60,40)

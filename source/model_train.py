@@ -39,33 +39,40 @@ class Train(nn.Module):
 
 '''getting batches and flattening the input tensor'''
 def getBatch(net,data,target,batch):
-	x = torch.from_numpy(data[batch:batch+net.batch_size]).float()
-	y = torch.from_numpy(target[batch:batch+net.batch_size]).float()
-	x = x.view(x.shape[0],x.shape[1]*x.shape[2])
+	start_pos = batch * net.batch_size
+	end_pos = start_pos + net.batch_size
+	x = torch.from_numpy(data[start_pos:end_pos]).float()
+	y = torch.from_numpy(target[start_pos:end_pos]).float()
+	# x = x.view(x.shape[0],x.shape[1]*x.shape[2])
+	y = y.view(y.shape[0],1)
 	return x,y
 
-def trainNetwork(net,data,target,num_iterations,epoch):
-	
-	for batch in range(len(data)//net.batch_size):
-	# for batch in range(2):
-		num_iterations+=1
+def trainNetwork(net,data,target,epoch):
+	num_batches = (len(data)//net.batch_size)
+	total_loss = 0
+	for batch in range(num_batches):
+
 		X,Y = getBatch(net,data,target,batch)
+		# print Y.shape
 		out = net.network.forward(X)
 		loss = net.loss_function(out,Y)
-		
 		net.optimizer.zero_grad()
 		loss.backward()
 		net.optimizer.step()
 
-		print('Epoch: {} Iteration:{} LOSS: {}'.format(epoch, num_iterations, loss.item()))
-		plotter.plot('Loss', 'Train', 'Training Loss', num_iterations, loss.detach().numpy())
+		total_loss +=loss.item()
 	
-	return net,num_iterations
+		if epoch == 74:
+			print out*10
+
+	print('Epoch: {} LOSS: {}'.format(epoch, total_loss/num_batches))
+	plotter.plot('Loss', 'Train', 'SBI2 Training Loss', epoch, total_loss/num_batches)
+
+	return net
 	
 
 
 if __name__ == '__main__':
-	num_iterations = 0
 	global plotter
 	plotter = Plotter(env_name='Thesis Project')
 
@@ -78,9 +85,11 @@ if __name__ == '__main__':
 	data = DataProcessing(file_name,train_size)
 	train_data,train_target = data.trainingData()
 
+
 	net = Train()
 
 	for epoch in range(num_epochs):
-		net,num_iterations = trainNetwork(net,train_data,train_target,num_iterations,epoch)
+		net = trainNetwork(net,train_data,train_target,epoch)
 
-	torch.save(net.network,'../saved_models/model.pt')
+	# torch.save(net.network.state_dict(),'../saved_models/model_TATAPOWER.pt')
+	

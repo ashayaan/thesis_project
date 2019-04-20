@@ -35,15 +35,15 @@ class DataProcessing(object):
 		self.index = int(len(self.df) * self.train_size)
 		self.seq_size = sequence_size
 
-		self.train_data = self.df[:self.index]
-		self.test_data = self.df[self.index:]
+		self.train_data = self.df[:self.index]/10
+		self.test_data = self.df[self.index:]/10
 
 	def trainingData(self):
 		attributes = []
 		target = []
 		for i in range( (len(self.train_data)//self.seq_size)*self.seq_size - self.seq_size - 1 ):
-			x = np.array(self.train_data.iloc[i:i+self.seq_size],np.float64)
-			y = np.array(self.train_data.iloc[i+ self.seq_size],np.float64)
+			x = np.array(self.train_data.iloc[i:i+self.seq_size,0],np.float64)
+			y = np.array(self.train_data.iloc[i+ self.seq_size,0],np.float64)
 			attributes.append(x)
 			target.append(y)
 

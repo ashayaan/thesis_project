@@ -13,3 +13,4 @@ learning_rate = 1e-5
 input_channels = 1
 epochs = 100
 window_size = 5
+policy_learning_rate = 1e-5

@@ -31,6 +31,9 @@ class DataProcessing(object):
 		return models
 
 	def trainingData(self):
+		print "---------------------------------------------"
+		print "Loading Data"
+		print "---------------------------------------------"
 		attributes = []
 		target = []
 		#Creating Window
@@ -53,14 +56,18 @@ class DataProcessing(object):
 				pred = self.trained_models[j].forward(input_data) * normalization_factor
 				predicted.append(pred.item())
 			
-			x = np.concatenate((x,np.array(predicted).reshape(14,1)),axis=1)
+			x = np.concatenate((x,np.array(predicted).reshape(14,1)),axis=1).reshape(1,14,6)
+
 			attributes.append(x)
 			target.append(y)
 		
-		return attributes,target
+		return np.array(attributes),np.array(target)
 
+'''Testing utils for policy network'''
 if __name__ == '__main__':
 	x = DataProcessing('../data/combined.csv',0.8,'../saved_models')
 	attributes,target = x.trainingData()
 
 	print attributes[0]
+	print attributes[0].shape
+	print target

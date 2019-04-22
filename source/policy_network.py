@@ -18,6 +18,8 @@ class PolicyNetwork(nn.Module):
 		self.conv3 = nn.Conv2d(in_channels=49,out_channels=1,kernel_size=(1,1),stride=1,padding=0)
 		self.layer1 = nn.Linear(1*14*1,14)
 
+		self.weigth_buffer = []
+
 	def num_flatten_features(self,x):
 		size = x.size()[1:]
 		num_features = 1
@@ -42,5 +44,5 @@ class PolicyNetwork(nn.Module):
 if __name__ == '__main__':
 	test = PolicyNetwork(input_channels)
 	x = torch.randn((1,1,14,6))
-	w_previous = torch.randn((14,1))
-	print test.forward(x,w_previous)
+	test.weigth_buffer.append(torch.randn((14,1)))
+	print test.forward(x,test.weigth_buffer[-1]).shape

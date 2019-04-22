@@ -33,7 +33,7 @@ class DataProcessing(object):
 	def trainingData(self):
 		print "---------------------------------------------"
 		print "Loading Data"
-		print "---------------------------------------------"
+		print "---------------------------------------------\n"
 		attributes = []
 		target = []
 		#Creating Window

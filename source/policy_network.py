@@ -20,6 +20,9 @@ class PolicyNetwork(nn.Module):
 
 		self.weigth_buffer = []
 
+	def resetBuffer(self):
+		self.weigth_buffer = []
+
 	def num_flatten_features(self,x):
 		size = x.size()[1:]
 		num_features = 1
@@ -39,10 +42,12 @@ class PolicyNetwork(nn.Module):
 		#Flattening features to feed in linear layer
 		out = out.view(-1,self.num_flatten_features(out))
 		out = self.softmax(self.layer1(out))
+		self.weigth_buffer.append(out)
 		return out
 
 if __name__ == '__main__':
 	test = PolicyNetwork(input_channels)
 	x = torch.randn((1,1,14,6))
-	test.weigth_buffer.append(torch.randn((14,1)))
+	test.weigth_buffer.append(torch.randn((1,14)))
 	print test.forward(x,test.weigth_buffer[-1]).shape
+	print len(test.weigth_buffer)

@@ -1,10 +1,33 @@
 import torch
 import numpy as np
 import pandas as pd
+from visdom import Visdom
 
 from model_params import window_size
 from model import Network
 from model_params import input_size
+
+
+
+class Plotter(object):
+	"""Plots to Visdom"""
+	def __init__(self, env_name='main'):
+		self.viz = Visdom()
+		self.env = env_name
+		self.plots = {}
+	def plot(self, var_name, split_name, title_name, x, y):
+		if var_name not in self.plots:
+			self.plots[var_name] = self.viz.line(X=np.array([x,x]), Y=np.array([y,y]), env=self.env, opts=dict(
+				legend=[split_name],
+				title=title_name,
+				xlabel='Iterations',
+				ylabel=var_name
+			))
+		else:
+			self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name, update = 'append')
+
+
+
 
 class DataProcessing(object):
 	def __init__(self,file_name,train_size,path):
@@ -21,6 +44,10 @@ class DataProcessing(object):
 	def getModels(self,path):
 		name = ['SBI','LUPIN','CIPLA','KOTAK','LARSON','TATASTEEL','WIPRO','BOSCH','JINDAL','SUN','BHEL','HDFC','INFY','TATAPOWER']
 		models = []
+		print "---------------------------------------------"
+		print "Loading Saved Models"
+		print "---------------------------------------------\n"
+		
 		for n in name:
 			model_name = str(path)+'/model_'+n+'.pt'
 			temp = Network(input_size)
@@ -38,11 +65,18 @@ class DataProcessing(object):
 		target = []
 		#Creating Window
 		for i in range( (len(self.train_data)//self.window)*self.window - self.window - 1 ):
+			#X is the price tensor that contains the history of the market
+			#Y is the relative price vector i.e vt/vt-1
+
 			x = np.array(self.train_data.iloc[i:i+self.window],np.float64)
 			y = np.array(self.train_data.iloc[i+self.window],np.float64)
+			y = y/x[-1]
+			
+			#reshaping the price tensor
 			x = x.T
+			
 			predicted = [] 
-			#Predicting next and concatinnating
+			#Predicting next and concatenating
 			for	j in range(len(x)):
 				normalization_factor = 1
 				if j in[0,1,2,3,6,8,9,10,12,13]:
@@ -69,5 +103,7 @@ if __name__ == '__main__':
 	attributes,target = x.trainingData()
 
 	print attributes[0]
-	print attributes[0].shape
-	print target
+	print attributes.shape
+	# print attributes[0]
+	print target[0:1].shape
+	# print target.shape

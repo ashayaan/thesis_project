@@ -11,8 +11,8 @@ learning_rate = 1e-5
 
 #Policy Network Parameters
 input_channels = 1
-epochs = 100
+epochs = 1
 window_size = 5
-policy_learning_rate = 1e-5
+policy_learning_rate = 1e-3
 policy_batch_size = 1
-transaction_commission = 0.0025
+transaction_commission = 0.0025	

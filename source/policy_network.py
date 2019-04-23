@@ -18,10 +18,11 @@ class PolicyNetwork(nn.Module):
 		self.conv3 = nn.Conv2d(in_channels=49,out_channels=1,kernel_size=(1,1),stride=1,padding=0)
 		self.layer1 = nn.Linear(1*14*1,14)
 
-		self.weigth_buffer = []
+		#Investment only on cash not in any equity
+		self.weight_buffer = list(torch.zeros(1,14))
 
 	def resetBuffer(self):
-		self.weigth_buffer = []
+		self.weight_buffer = list(torch.zeros(1,14))
 
 	def num_flatten_features(self,x):
 		size = x.size()[1:]
@@ -42,12 +43,14 @@ class PolicyNetwork(nn.Module):
 		#Flattening features to feed in linear layer
 		out = out.view(-1,self.num_flatten_features(out))
 		out = self.softmax(self.layer1(out))
-		self.weigth_buffer.append(out)
+		self.weight_buffer.append(out)
 		return out
 
 if __name__ == '__main__':
 	test = PolicyNetwork(input_channels)
 	x = torch.randn((1,1,14,6))
-	test.weigth_buffer.append(torch.randn((1,14)))
-	print test.forward(x,test.weigth_buffer[-1]).shape
-	print len(test.weigth_buffer)
+	# test.weight_buffer.append(torch.randn((1,14)))
+	print test.forward(x,test.weight_buffer[-1]).shape
+	print test.weight_buffer
+	test.resetBuffer()
+	print test.weight_buffer

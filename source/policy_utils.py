@@ -27,8 +27,6 @@ class Plotter(object):
 			self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name, update = 'append')
 
 
-
-
 class DataProcessing(object):
 	def __init__(self,file_name,train_size,path):
 		self.df = pd.read_csv(file_name)
@@ -58,8 +56,8 @@ class DataProcessing(object):
 		return models
 
 	def trainingData(self):
-		print "---------------------------------------------"
-		print "Loading Data"
+		print "\n---------------------------------------------"
+		print "Loading Training Data"
 		print "---------------------------------------------\n"
 		attributes = []
 		target = []
@@ -97,10 +95,53 @@ class DataProcessing(object):
 		
 		return np.array(attributes),np.array(target)
 
+
+	def testingData(self):
+		print "\n---------------------------------------------"
+		print "Loading Testing Data"
+		print "---------------------------------------------\n"
+		attributes = []
+		target = []
+
+		#Creating Window
+		for i in range( (len(self.test_data)//self.window)*self.window - self.window - 1 ):
+			#X is the price tensor that contains the history of the market
+			#Y is the relative price vector i.e vt/vt-1
+
+			x = np.array(self.test_data.iloc[i:i+self.window],np.float64)
+			y = np.array(self.test_data.iloc[i+self.window],np.float64)
+			y = y/x[-1]
+			
+			#reshaping the price tensor
+			x = x.T
+			
+			predicted = [] 
+			#Predicting next and concatenating
+			for	j in range(len(x)):
+				normalization_factor = 1
+				if j in[0,1,2,3,6,8,9,10,12,13]:
+					normalization_factor = 10
+				elif j in [4,5,11]:
+					normalization_factor = 50
+				else:
+					normalization_factor = 250
+
+				input_data = torch.from_numpy(x[j]/normalization_factor).float()
+				pred = self.trained_models[j].forward(input_data) * normalization_factor
+				predicted.append(pred.item())
+			
+			x = np.concatenate((x,np.array(predicted).reshape(14,1)),axis=1).reshape(1,14,6)
+
+			attributes.append(x)
+			target.append(y)
+		
+		return np.array(attributes),np.array(target)
+
+
 '''Testing utils for policy network'''
 if __name__ == '__main__':
 	x = DataProcessing('../data/combined.csv',0.8,'../saved_models')
-	attributes,target = x.trainingData()
+	attributes,target = x.testingData()
 
 	print attributes[0]
 	print attributes.shape

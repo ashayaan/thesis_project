@@ -8,6 +8,8 @@ import torch.optim as optim
 import argparse
 import math
 
+from bench_mark.loser import Loser
+from bench_mark.winner import Winner
 
 from policy_utils import DataProcessing
 from policy_utils import Plotter
@@ -21,6 +23,7 @@ from model_params import policy_learning_rate
 from model_params import train_size
 from model_params import policy_batch_size as batch_size
 from model_params import transaction_commission
+from model_params import bench_mark_output_size
 
 class Train(nn.Module):
 	def __init__(self,learning_rate,input_channels):
@@ -91,35 +94,80 @@ def trainNetwork(net,train_data,train_target,iterations):
 		plotter.plot('Wealth', 'iterations', 'Policy Wealth', iterations, net.wealth)
 
 	print('Wealth:{} Loss:{}').format(net.wealth,net.loss/num_batches)
-	#TODO update summary 
-	return net,iterations
+	return net
+
+
+def backTest(net,winner,loser,test_data,test_target,iterations):
+	num_batches = (len(test_data)//net.batch_size)
+
+	for batch in range(num_batches):
+		iterations += 1
+
+		x,y = net.getBatch(test_data,test_target,batch)
+
+		#Policy Forward Propagation
+		previous_weights = net.network.weight_buffer[-1]
+		new_weights = net.network.forward(x,previous_weights)
+		policy_loss = net.loss_function(previous_weights,new_weights,y)
+		net.updateSummary(policy_loss.item())
+
+		#Follow the winner
+		winner_previous_weights = winner.weight_buffer[-1]
+		new_weights_winner = winner.predict(x)
+		winner_loss = winner.loss_function(winner_previous_weights,new_weights_winner,y)
+		winner.updateSummary(winner_loss)
+
+		#Follow the loser
+		loser_previous_weights = loser.weight_buffer[-1]
+		new_weights_loser = loser.predict(x)
+		loser_loss = loser.loss_function(loser_previous_weights,new_weights_loser,y)
+		loser.updateSummary(loser_loss)
+
+		print net.wealth
 
 if __name__ == '__main__':
 	global plotter
 	plotter = Plotter(env_name='Policy Network')
 
 	parser = argparse.ArgumentParser()
+	parser.add_argument("--mode", type=str, default='train', help='Please select mode training or test')
 	parser.add_argument("--datapath", type=str, default="../data", help="path to the dataset")
-	parser.add_argument("--file", type=str, default="combined.csv")
+	parser.add_argument("--file", type=str, default="combined.csv", help='Please give path to the data files')
 	parser.add_argument("--models", type=str, default="../saved_models", help="path to the dataset")
 	args = parser.parse_args()
 	file_name = args.datapath + '/' + args.file
-
-
-	net = Train(policy_learning_rate,input_channels)
+	mode = args.mode
 	
-	# print net.network.weight_buffer
-
+	#Data utility object
 	data = DataProcessing(file_name,train_size,args.models)
-	train_data, train_target = data.trainingData()
-
 	iterations = 0
-	for epoch in range(net.epochs):
-		print '--------------------------'
-		print('Epoch: {}').format(epoch+1)
-		print '-------------------------'
-		net,iterations = trainNetwork(net,train_data,train_target,iterations)
-		net.reset()
-		net.network.resetBuffer()
 
+	#Training model
+	if mode == 'train':
+		net = Train(policy_learning_rate,input_channels)
+		train_data, train_target = data.trainingData()
 
+		for epoch in range(net.epochs):
+			print '--------------------------'
+			print('Epoch: {}').format(epoch+1)
+			print '-------------------------'
+			net = trainNetwork(net,train_data,train_target,iterations)
+			net.reset()
+			net.network.resetBuffer()	
+
+		torch.save(net.network.state_dict(),'../saved_models/policy_network.pt')
+
+	#Testing the model
+	elif mode == 'test':
+		try:
+			net = Train(policy_learning_rate,input_channels)
+			# net.network.load_state_dict(torch.load('../saved_models/policy_network.pt'))
+			loser = Loser(bench_mark_output_size)
+			winner = Winner(bench_mark_output_size)
+		except Exception as e:
+			print e
+			print 'Please give the correct path to the saved model'
+			
+		test_data, test_target = data.testingData()
+
+		backTest(net,winner,loser,test_data,test_target,iterations)

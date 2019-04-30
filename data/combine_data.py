@@ -29,7 +29,7 @@ def combineFiles(data_frames):
 	combined.rename(columns={'SBI_Historical_Data':'Date'},inplace = True)
 
 
-	combined.to_csv('combined.csv',index = False)
+	combined.to_csv('combined2.csv',index = False)
 
 if __name__ == '__main__':
 	path = 'daily_data'

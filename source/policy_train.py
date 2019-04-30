@@ -13,6 +13,7 @@ from bench_mark.winner import Winner
 
 from policy_utils import DataProcessing
 from policy_utils import Plotter
+from policy_utils import Multiple_Plotter
 from policy_network import PolicyNetwork
 
 
@@ -92,14 +93,13 @@ def trainNetwork(net,train_data,train_target,iterations):
 		# print net.wealth*torch.exp(-1*loss.item())
 		net.updateSummary(loss.item())
 		plotter.plot('Wealth', 'iterations', 'Policy Wealth', iterations, net.wealth)
-
+		print('Iteration:{} Wealth:{}').format(iterations, net.wealth)
 	print('Wealth:{} Loss:{}').format(net.wealth,net.loss/num_batches)
 	return net
 
 
 def backTest(net,winner,loser,test_data,test_target,iterations):
 	num_batches = (len(test_data)//net.batch_size)
-
 	for batch in range(num_batches):
 		iterations += 1
 
@@ -123,16 +123,22 @@ def backTest(net,winner,loser,test_data,test_target,iterations):
 		loser_loss = loser.loss_function(loser_previous_weights,new_weights_loser,y)
 		loser.updateSummary(loser_loss)
 
-		print net.wealth
+		plot_x = [net.wealth, winner.wealth, loser.wealth]
+		backtest_plotter.plot(['Policy_Wealth','Winner_wealth','Loser Wealth'], 'iterations', 'Policy Wealth', iterations, plot_x)	
+			
+		print iterations, y
 
 if __name__ == '__main__':
 	global plotter
 	plotter = Plotter(env_name='Policy Network')
 
+	global backtest_plotter
+	backtest_plotter = Multiple_Plotter(env_name='Test')
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--mode", type=str, default='train', help='Please select mode training or test')
 	parser.add_argument("--datapath", type=str, default="../data", help="path to the dataset")
-	parser.add_argument("--file", type=str, default="combined.csv", help='Please give path to the data files')
+	parser.add_argument("--file", type=str, default="combined2.csv", help='Please give path to the data files')
 	parser.add_argument("--models", type=str, default="../saved_models", help="path to the dataset")
 	args = parser.parse_args()
 	file_name = args.datapath + '/' + args.file
@@ -160,8 +166,11 @@ if __name__ == '__main__':
 	#Testing the model
 	elif mode == 'test':
 		try:
+			print"\n======================================="
+			print "             Loading model              "
+			print "========================================\n"
 			net = Train(policy_learning_rate,input_channels)
-			# net.network.load_state_dict(torch.load('../saved_models/policy_network.pt'))
+			net.network.load_state_dict(torch.load('../saved_models/policy_network.pt'))
 			loser = Loser(bench_mark_output_size)
 			winner = Winner(bench_mark_output_size)
 		except Exception as e:

@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--datapath", type=str, default="../data", help="path to the dataset")
-	parser.add_argument("--file", type=str, default="combined.csv")
+	parser.add_argument("--file", type=str, default="combined2.csv")
 	args = parser.parse_args()
 	file_name = args.datapath + '/' + args.file
 
@@ -91,5 +91,5 @@ if __name__ == '__main__':
 	for epoch in range(num_epochs):
 		net = trainNetwork(net,train_data,train_target,epoch)
 
-	# torch.save(net.network.state_dict(),'../saved_models/model_TATAPOWER.pt')
+	torch.save(net.network.state_dict(),'../saved_models/model_JINDAL.pt')
 	

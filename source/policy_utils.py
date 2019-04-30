@@ -7,6 +7,22 @@ from model_params import window_size
 from model import Network
 from model_params import input_size
 
+class Multiple_Plotter(object):
+	def __init__(self,env_name='main'):
+		self.viz = Visdom()
+		self.env = env_name
+		self.plots = {}
+
+	def plot(self,var_name,split_name,title_name,x,y):
+		name = 'Loss Plot'
+		# print np.array([x]),np.array(y)
+		if name not in self.plots:
+			self.plots[name] = self.viz.line(X=np.array([x]),Y=np.array([y[0]]),env=self.env, opts=dict(
+			legend=var_name,title=title_name,xlabel='Iterations',ylabel='Wealth'),name='Policy')
+		else:
+			self.viz.line(X=np.array([x]), Y=np.array([y[0]]), env=self.env, win=self.plots[name],name='Policy_Wealth', update = 'append')
+			self.viz.line(X=np.array([x]), Y=np.array([y[1]]), env=self.env, win=self.plots[name],name='Winner', update = 'append')
+			self.viz.line(X=np.array([x]), Y=np.array([y[2]]), env=self.env, win=self.plots[name],name='Loser', update = 'append')
 
 
 class Plotter(object):
@@ -141,10 +157,9 @@ class DataProcessing(object):
 '''Testing utils for policy network'''
 if __name__ == '__main__':
 	x = DataProcessing('../data/combined.csv',0.8,'../saved_models')
-	attributes,target = x.testingData()
-
-	print attributes[0]
+	attributes,target = x.trainingData()
+	# print attributes[0]
 	print attributes.shape
 	# print attributes[0]
-	print target[0:1].shape
-	# print target.shape
+	# print target[0:1].shape
+	# print attributes[430:440]

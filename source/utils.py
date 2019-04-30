@@ -42,8 +42,8 @@ class DataProcessing(object):
 		attributes = []
 		target = []
 		for i in range( (len(self.train_data)//self.seq_size)*self.seq_size - self.seq_size - 1 ):
-			x = np.array(self.train_data.iloc[i:i+self.seq_size,0],np.float64)
-			y = np.array(self.train_data.iloc[i+ self.seq_size,0],np.float64)
+			x = np.array(self.train_data.iloc[i:i+self.seq_size,8],np.float64)
+			y = np.array(self.train_data.iloc[i+ self.seq_size,8],np.float64)
 			attributes.append(x)
 			target.append(y)
 

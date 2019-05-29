@@ -39,7 +39,6 @@ class PolicyNetwork(nn.Module):
 		w_previous = w_previous.view(-1,1,14,1)
 		out = torch.cat((out,w_previous),1)
 		out = self.relu(self.conv3(out))
-		
 		#Flattening features to feed in linear layer
 		out = out.view(-1,self.num_flatten_features(out))
 		out = self.softmax(self.layer1(out))
@@ -51,6 +50,6 @@ if __name__ == '__main__':
 	x = torch.randn((1,1,14,6))
 	# test.weight_buffer.append(torch.randn((1,14)))
 	print test.forward(x,test.weight_buffer[-1]).shape
-	print test.weight_buffer
-	test.resetBuffer()
-	print test.weight_buffer
+	# print test.weight_buffer
+	# test.resetBuffer()
+	# print test.weight_buffer

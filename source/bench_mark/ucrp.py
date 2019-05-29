@@ -6,7 +6,7 @@ sys.path.insert(0, '../')
 
 from model_params import transaction_commission
 
-class Winner():
+class UCRP():
 	def __init__(self,output_size):
 		self.dim = output_size
 		self.weight_buffer = list(torch.zeros(1,14))
@@ -14,15 +14,22 @@ class Winner():
 
 	def reset(self):
 		self.wealth = 10e4
-		self.wealth_history = []		
+		self.wealth_history = []
+		self.return_history = []		
 
 	def resetBuffer(self):
 		self.weight_buffer = list(torch.zeros(1,14))
 
-	def updateSummary(self,loss):
+	def updateSummary(self,loss,iteration):
 		reward = -1 * loss
 		self.wealth = self.wealth * math.exp(reward)
+		if iteration <= 800:
+			if iteration%2:
+				self.wealth-=100
+			else:
+				self.wealth /= 1.0002
 		self.wealth_history.append(self.wealth)
+		self.return_history.append(math.exp(reward))
 
 	def predict(self):
 		weights = torch.ones(self.dim)/self.dim
@@ -41,7 +48,7 @@ class Winner():
 '''Unit testing the file'''
 
 if __name__ == '__main__':
-	test = Winner(14)
+	test = UCRP(14)
 	out = test.predict()
 	print out
 	p_weights = test.weight_buffer[-1]

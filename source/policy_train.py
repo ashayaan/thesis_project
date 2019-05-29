@@ -7,9 +7,11 @@ import torch.nn as nn
 import torch.optim as optim
 import argparse
 import math
+import statistics
 
 from bench_mark.loser import Loser
 from bench_mark.winner import Winner
+from bench_mark.ucrp import UCRP
 
 from policy_utils import DataProcessing
 from policy_utils import Plotter
@@ -44,6 +46,7 @@ class Train(nn.Module):
 		self.loss = 0
 		self.total_reward = 0
 		self.wealth_history = []
+		self.return_history = []
 
 	def updateSummary(self,loss):
 		self.loss += loss
@@ -51,6 +54,7 @@ class Train(nn.Module):
 		self.wealth = self.wealth * math.exp(reward)
 		self.total_reward += reward
 		self.wealth_history.append(self.wealth)
+		self.return_history.append(math.exp(reward))
 
 	def getBatch(self,data,target,batch):
 		start_pos = batch * self.batch_size
@@ -98,7 +102,7 @@ def trainNetwork(net,train_data,train_target,iterations):
 	return net
 
 
-def backTest(net,winner,loser,test_data,test_target,iterations):
+def backTest(net,winner,loser,ucrp,test_data,test_target,iterations):
 	num_batches = (len(test_data)//net.batch_size)
 	for batch in range(num_batches):
 		iterations += 1
@@ -114,19 +118,36 @@ def backTest(net,winner,loser,test_data,test_target,iterations):
 		#Follow the winner
 		winner_previous_weights = winner.weight_buffer[-1]
 		new_weights_winner = winner.predict(x)
-		winner_loss = winner.loss_function(winner_previous_weights,new_weights_winner,y)
+		winner_loss = winner.loss_function(winner_previous_weights, new_weights_winner, y)
 		winner.updateSummary(winner_loss)
 
 		#Follow the loser
 		loser_previous_weights = loser.weight_buffer[-1]
 		new_weights_loser = loser.predict(x)
-		loser_loss = loser.loss_function(loser_previous_weights,new_weights_loser,y)
+		loser_loss = loser.loss_function(loser_previous_weights, new_weights_loser, y)
 		loser.updateSummary(loser_loss)
 
-		plot_x = [net.wealth, winner.wealth, loser.wealth]
-		backtest_plotter.plot(['Policy_Wealth','Winner_wealth','Loser Wealth'], 'iterations', 'Policy Wealth', iterations, plot_x)	
-			
-		print iterations, y
+		#Follow UCRP
+		ucrp_previous_weights = ucrp.weight_buffer[-1]
+		new_weights_ucrp = ucrp.predict()
+		ucrp_loss = ucrp.loss_function(ucrp_previous_weights, new_weights_ucrp, y)
+		ucrp.updateSummary(ucrp_loss,iterations)
+
+
+		plot_x = [net.wealth, winner.wealth, loser.wealth,ucrp.wealth]
+		backtest_plotter.plot(['Policy_Wealth','Winner_wealth','Loser Wealth','UCRP Wealth'], 'Days', 'Policy Wealth', iterations, plot_x)	
+
+def calculateSharpeRation(net,winner,loser,ucrp):
+	sharpe_ratio_net = ((statistics.mean(net.return_history)-1)/100)/statistics.stdev(net.return_history)	
+	sharpe_ratio_winner = ((statistics.mean(winner.return_history)-1)/100)/statistics.stdev(winner.return_history)	
+	sharpe_ratio_loser = ((statistics.mean(loser.return_history)-1)/100)/statistics.stdev(loser.return_history)	
+	sharpe_ratio_ucrp = ((statistics.mean(ucrp.return_history)-1)/100)/statistics.stdev(ucrp.return_history)	
+
+	print sharpe_ratio_net
+	print sharpe_ratio_winner
+	print sharpe_ratio_loser
+	print sharpe_ratio_ucrp
+
 
 if __name__ == '__main__':
 	global plotter
@@ -145,7 +166,9 @@ if __name__ == '__main__':
 	mode = args.mode
 	
 	#Data utility object
-	data = DataProcessing(file_name,train_size,args.models)
+	# data = DataProcessing(file_name,train_size,args.models)
+	data = DataProcessing(file_name,0.8,args.models)
+
 	iterations = 0
 
 	#Training model
@@ -173,10 +196,14 @@ if __name__ == '__main__':
 			net.network.load_state_dict(torch.load('../saved_models/policy_network.pt'))
 			loser = Loser(bench_mark_output_size)
 			winner = Winner(bench_mark_output_size)
+			ucrp = UCRP(bench_mark_output_size)
 		except Exception as e:
 			print e
 			print 'Please give the correct path to the saved model'
 			
 		test_data, test_target = data.testingData()
 
-		backTest(net,winner,loser,test_data,test_target,iterations)
+		backTest(net,winner,loser,ucrp,test_data,test_target,iterations)
+
+		calculateSharpeRation(net,winner,loser,ucrp)
+		

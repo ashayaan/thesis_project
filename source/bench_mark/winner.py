@@ -14,7 +14,8 @@ class Winner():
 
 	def reset(self):
 		self.wealth = 10e4
-		self.wealth_history = []		
+		self.wealth_history = []
+		self.return_history = []		
 
 	def resetBuffer(self):
 		self.weight_buffer = list(torch.zeros(1,14))
@@ -23,6 +24,7 @@ class Winner():
 		reward = -1 * loss
 		self.wealth = self.wealth * math.exp(reward)
 		self.wealth_history.append(self.wealth)
+		self.return_history.append(math.exp(reward))
 
 	def predict(self,data):
 		close = data[-1][-1][-1] 

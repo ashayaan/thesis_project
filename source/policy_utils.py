@@ -23,6 +23,7 @@ class Multiple_Plotter(object):
 			self.viz.line(X=np.array([x]), Y=np.array([y[0]]), env=self.env, win=self.plots[name],name='Policy_Wealth', update = 'append')
 			self.viz.line(X=np.array([x]), Y=np.array([y[1]]), env=self.env, win=self.plots[name],name='Winner', update = 'append')
 			self.viz.line(X=np.array([x]), Y=np.array([y[2]]), env=self.env, win=self.plots[name],name='Loser', update = 'append')
+			self.viz.line(X=np.array([x]), Y=np.array([y[3]]), env=self.env, win=self.plots[name],name='UCRP', update = 'append')
 
 
 class Plotter(object):
@@ -123,7 +124,6 @@ class DataProcessing(object):
 		for i in range( (len(self.test_data)//self.window)*self.window - self.window - 1 ):
 			#X is the price tensor that contains the history of the market
 			#Y is the relative price vector i.e vt/vt-1
-
 			x = np.array(self.test_data.iloc[i:i+self.window],np.float64)
 			y = np.array(self.test_data.iloc[i+self.window],np.float64)
 			y = y/x[-1]
@@ -156,10 +156,10 @@ class DataProcessing(object):
 
 '''Testing utils for policy network'''
 if __name__ == '__main__':
-	x = DataProcessing('../data/combined.csv',0.8,'../saved_models')
-	attributes,target = x.trainingData()
-	# print attributes[0]
-	print attributes.shape
+	x = DataProcessing('../data/combined2.csv',0.8,'../saved_models')
+	attributes,target = x.testingData()
+	
+	print attributes[-1]
 	# print attributes[0]
 	# print target[0:1].shape
 	# print attributes[430:440]
